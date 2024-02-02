@@ -3,6 +3,7 @@ import pandas as pd
 from tkinter import Tk, filedialog
 
 def FocusUserMerge() -> None:
+
     root = Tk()
     root.wm_attributes('-topmost', True)
     root.withdraw()
@@ -28,7 +29,8 @@ def FocusUserMerge() -> None:
     merge_columns = ['User ID']
 
     try:
-        merged_df = pd.merge(df1, df2, on=merge_columns, how='inner')
+        # Exclude the 'Profile' columns from both CSVs
+        merged_df = pd.merge(df1.drop(columns=['Profile']), df2.drop(columns=['Profile']), on=merge_columns, how='left')
     except pd.errors.MergeError:
         print("Error merging DataFrames. Check if the specified columns exist in both files.")
         # Handle this case as per your requirement
@@ -36,6 +38,9 @@ def FocusUserMerge() -> None:
         print(f"An unexpected error occurred during merging: {e}")
 
     try:
+        merged_df = merged_df[merged_df["E-mail Address"] != " - "]        
+        merged_df.sort_values('User')
+        merged_df.drop_duplicates(subset=["User","E-mail Address"])
         print(merged_df)
         # Prompt user to save the merged DataFrame as a new CSV file
         save_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")], title="Save Merged CSV As")
@@ -46,3 +51,6 @@ def FocusUserMerge() -> None:
             print("No file selected. The merged DataFrame has not been saved.")
     except Exception as e:
         print(f"An error occurred while displaying/saving the merged DataFrame: {e}")
+
+if __name__ == "__main__":
+    FocusUserMerge()
